@@ -55,7 +55,7 @@
 - **Kapatma:** `Escape` tuşuna basarak widget'ı kapatabilirsiniz.
 
 ## Lisans
-Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır. Daha fazla bilgi için [LICENSE](LICENSE) dosyasına bakabilirsiniz.
+Bu proje [MIT Lisansı](https://opensource.org/licenses/MIT) ile lisanslanmıştır. Daha fazla bilgi için [LICENSE](https://opensource.org/licenses/MIT) dosyasına bakabilirsiniz.
 Projeniz için yaygın olarak kullanılan [MIT Lisansı](https://opensource.org/licenses/MIT) önerilmektedir. MIT Lisansı, projenizin açık kaynak olarak paylaşılmasını sağlar ve kullanıcılara geniş kullanım hakları tanır.
 
 Copyright (c) [2024] [Ali Tekdemir]
@@ -67,3 +67,4 @@ Proje ile ilgili sorularınız veya önerileriniz için e-mail adresimden bana u
 Diyanet İşleri Başkanlığı: Namaz vakitlerini sağladıkları için teşekkür ederiz.
 Python ve Tkinter: Bu projeyi mümkün kılan güçlü araçlar.
 
+---
