@@ -7,7 +7,6 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-.backups/
 .Python
 build/
 develop-eggs/
@@ -119,3 +118,8 @@ dmypy.json
 
 # Windows
 Thumbs.db
+
+# Added by me
+tester.ipynb
+.backups/
+.prettierrc
