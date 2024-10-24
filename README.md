@@ -3,10 +3,10 @@
 **NamazZaman** - Windows 10 için hafif, kullanışlı ve minimalist bir namaz vakti geri sayım widget'ı. 🌙 Namaz vakitlerini **Diyanet İşleri Başkanlığı**'ndan otomatik olarak alır ve bir sonraki namaza kadar kalan süreyi anlık olarak gösterir. Çalışma veya öğrenme sırasında hızlı bir göz atma aracı olarak tasarlandı. 
 Artık vakit kaçırmak yok! 🚀
 
-![NamazZaman Screenshot](/screenshots/2024-10-24%20030956.png)
-![NamazZaman Screenshot](/screenshots/2024-10-24%20031140.png)
-![NamazZaman Screenshot](/screenshots/2024-10-24%20031752.png)
-![NamazZaman Screenshot](/screenshots/2024-10-24%20030922.png)
+![NamazZaman Screenshot](/screenshots/2024-10-24_030956.png)
+![NamazZaman Screenshot](/screenshots/2024-10-24_031140.png)
+![NamazZaman Screenshot](/screenshots/2024-10-24_031752.png)
+![NamazZaman Screenshot](/screenshots/2024-10-24_030922.png)
 
 
 ## ✨ Özellikler 
