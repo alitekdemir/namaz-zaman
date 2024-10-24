@@ -115,10 +115,8 @@ class ClockApp:
 
     def show_context_menu(self, event):
         """Sağ tıklama menüsünü gösterir."""
-        try:
-            self.context_menu.tk_popup(event.x_root, event.y_root)
-        finally:
-            self.context_menu.grab_release()
+        self.context_menu.tk_popup(event.x_root, event.y_root)
+        self.context_menu.grab_release()
 
     def set_opacity(self, opacity_value):
         """Pencerenin opaklığını ayarlar."""
@@ -167,21 +165,19 @@ class ClockApp:
         y = event.y_root - self.offset_y
 
         # Snapping mantığı
-        # Sol kenar
-        if abs(x) <= self.snap_threshold:
-            x = 0
-        # Sağ kenar
-        elif abs(self.screen_width - (x + self.get_window_width())) <= self.snap_threshold:
-            x = self.screen_width - self.get_window_width()
-        # Üst kenar
-        if abs(y) <= self.snap_threshold:
-            y = 0
-        # Alt kenar
-        elif abs(self.screen_height - (y + self.get_window_height())) <= self.snap_threshold:
-            y = self.screen_height - self.get_window_height()
+        x = self.snap_to_edge(x, self.get_window_width(), self.screen_width)
+        y = self.snap_to_edge(y, self.get_window_height(), self.screen_height)
 
         # Pencere konumunu ayarla
         self.root.geometry(f"+{x}+{y}")
+
+    def snap_to_edge(self, pos, window_size, screen_size):
+        """Pencere kenarına yapışma (snapping) mantığını uygular."""
+        if abs(pos) <= self.snap_threshold:
+            return 0
+        elif abs(screen_size - (pos + window_size)) <= self.snap_threshold:
+            return screen_size - window_size
+        return pos
 
     def get_window_width(self):
         """Güncel pencere genişliğini döner."""
@@ -193,13 +189,13 @@ class ClockApp:
 
     def update_vakitler(self):
         """Namaz vakitlerini günceller ve bir sonraki namaz vaktine odaklanır."""
-        def fetch_and_update():
-            self.vakitler = self.manager.get_times()
-            self.calculate_next_prayer()
-            self.update_time()
+        threading.Thread(target=self.fetch_and_update_vakitler, daemon=True).start()
 
-        # Veri güncelleme işlemini ayrı bir iş parçacığında gerçekleştir
-        threading.Thread(target=fetch_and_update, daemon=True).start()
+    def fetch_and_update_vakitler(self):
+        """Namaz vakitlerini arkaplanda getirir ve günceller."""
+        self.vakitler = self.manager.get_times()
+        self.calculate_next_prayer()
+        self.update_time()
 
     def calculate_next_prayer(self):
         """Bir sonraki namaz vakitini hesaplar."""
@@ -219,49 +215,52 @@ class ClockApp:
             except ValueError:
                 self.next_prayer_time = None
 
+
     def update_time(self):
         """Geri sayımı günceller, arkaplan ve metin rengini ayarlar ve ekranda gösterir."""
         if self.next_prayer_time:
-            remaining_hms = ZamanHesapla.get_countdown(self.next_prayer_time)
             remaining_time = self.next_prayer_time - datetime.now()
-
-            # Kalan süreyi saniye cinsinden al
             remaining_seconds = max(int(remaining_time.total_seconds()), 0)
-            remaining_minutes = remaining_seconds // 60
-            remaining_hours = remaining_minutes // 60
+            remaining_minutes, remaining_seconds = divmod(remaining_seconds, 60)
+            remaining_hours, remaining_minutes = divmod(remaining_minutes, 60)
 
-            # Renk ayarlama mantığı
-            if remaining_hours >= 1:
-                bg_color = self.COLORS["Oxford Blue"]
-                fg_color = self.COLORS["White"]
-            elif 30 <= remaining_minutes < 60:  # 30 <= minutes < 60
-                bg_color = self.COLORS["Rosewood"]
-                fg_color = self.COLORS["White"]
-            elif 10 <= remaining_minutes < 30:  # 10 <= minutes < 30
-                bg_color = self.COLORS["Fire Brick"]
-                fg_color = self.COLORS["White"]
-            else:  # remaining_time < 10 minutes
-                bg_color = self.COLORS["Orange Peel"]
-                fg_color = self.COLORS["Dark"]
+            # Renk ayarını belirle
+            bg_color, fg_color = self.get_colors(remaining_hours, remaining_minutes)
 
-            # Arkaplan ve metin rengini ayarla
-            self.root.configure(bg=bg_color)
-            self.time_label.configure(bg=bg_color, fg=fg_color)
+            # Arkaplan ve metin rengini güncelle
+            self.apply_colors(bg_color, fg_color)
 
-            # Zaman formatına göre metni ayarla
-            if self.display_vertical:
-                # Dikey format: HH\nMM\nSS
-                remaining_hms_formatted = remaining_hms.replace(":", "\n")
-                self.time_label.config(text=remaining_hms_formatted)
-            else:
-                # Yatay format: HH:MM:SS
-                self.time_label.config(text=remaining_hms)
-
+            # Zamanı uygun formatta göster
+            formatted_time = self.format_time(remaining_hours, remaining_minutes, remaining_seconds)
+            self.time_label.config(text=formatted_time)
         else:
+            # Zaman verisi yoksa varsayılan ayarları kullan
+            self.apply_colors(self.COLORS["Oxford Blue"], self.COLORS["White"])
             self.time_label.config(text="----")
-            self.root.configure(bg=self.COLORS["Oxford Blue"])
-            self.time_label.configure(bg=self.COLORS["Oxford Blue"], fg=self.COLORS["White"])
 
-        # Bir sonraki güncelleme için 1 saniye sonra tekrar çağır
+        # Bir saniye sonra güncelleme yapmak için fonksiyonu tekrar çağır
         self.root.after(1000, self.update_time)
+
+    def get_colors(self, hours, minutes):
+        """Kalan süreye göre arkaplan ve metin rengini belirler."""
+        if hours >= 1:
+            return self.COLORS["Oxford Blue"], self.COLORS["White"]
+        elif 30 <= minutes < 60:
+            return self.COLORS["Rosewood"], self.COLORS["White"]
+        elif 10 <= minutes < 30:
+            return self.COLORS["Fire Brick"], self.COLORS["White"]
+        else:
+            return self.COLORS["Orange Peel"], self.COLORS["Dark"]
+
+    def apply_colors(self, bg_color, fg_color):
+        """Arkaplan ve metin rengini uygular."""
+        self.root.configure(bg=bg_color)
+        self.time_label.configure(bg=bg_color, fg=fg_color)
+
+    def format_time(self, hours, minutes, seconds):
+        """Zamanı uygun formatta biçimlendirir."""
+        formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}"
+        if self.display_vertical:
+            return formatted_time.replace(":", "\n")
+        return formatted_time
 

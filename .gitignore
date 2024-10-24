@@ -123,3 +123,4 @@ Thumbs.db
 tester.ipynb
 .backups/
 .prettierrc
+.json
