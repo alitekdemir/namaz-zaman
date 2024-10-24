@@ -1,6 +1,7 @@
-# NamazZaman
+# 🕌 NamazZamanı
 
-**NamazZaman** - Windows 10 için hafif ve kullanışlı bir namaz vakti geri sayım widget'ı. Diyanet tarafından sağlanan namaz vakitlerini indirir ve bir sonraki namaza kadar kalan süreyi anlık olarak gösterir. Çalışma veya öğrenme sırasında hızlı bir bakış aracı olarak tasarlanmıştır.
+**NamazZaman** - Windows 10 için hafif, kullanışlı ve minimalist bir namaz vakti geri sayım widget'ı. 🌙 Namaz vakitlerini **Diyanet İşleri Başkanlığı**'ndan otomatik olarak alır ve bir sonraki namaza kadar kalan süreyi anlık olarak gösterir. Çalışma veya öğrenme sırasında hızlı bir göz atma aracı olarak tasarlandı. 
+Artık vakit kaçırmak yok! 🚀
 
 ![NamazZaman Screenshot](/screenshots/2024-10-24%20030956.png)
 ![NamazZaman Screenshot](/screenshots/2024-10-24%20031140.png)
@@ -8,16 +9,20 @@
 ![NamazZaman Screenshot](/screenshots/2024-10-24%20030922.png)
 
 
-## Özellikler
+## ✨ Özellikler 
+- 🕋 **Namaz vakitleri:** Diyanet İşleri Başkanlığı’nın resmi sitesinden 30 günlük vakitler indirilir.
+- ⏳ **Geri sayım özelliği:** Bir sonraki namaz vaktine kadar kalan süreyi 00:00:Sn cinsinden gösterir.
+- 🎯 **Minimalist widget:** Yatay veya dikey modda çalışır. Sadece 88x34px boyutunda!
+- 📌 **Her Zaman Üstte:** Diğer pencerelerin üzerinde kalır, hızlı erişim sağlar.
+- 💨 **Kenara yapışma:** Pencereyi sürükleyip kenarlara yapıştırarak düzenli kullanım.
+- 🖱 **Sağ tıklama menüsü:** Opaklık, yön ve manuel güncelleme gibi hızlı ayarlar.
+    - ↻ **Yön seçimi:** Yatay veya dikey görünüm tercihi.
+    - 🕶 **Opacity (opaklık) kontrolü:** %50, %75 ve %100 seçenekleri.
+    - 🔄 **Vakitleri güncelle:** İstediğiniz zaman namaz vakitlerini indirebilirsiniz.
 
-- **Hafif ve Küçük:** 100x34px boyutunda minimal bir widget.
-- **Her Zaman Üstte:** Diğer pencerelerin üzerinde kalır, hızlı erişim sağlar.
-- **Geri Sayım:** Bir sonraki namaz vakti için geri sayım gösterir.
-- **Kullanıcı Dostu:** Kolay taşınabilir ve konumlandırılabilir.
-- **Özelleştirilebilir:** Opaklık ve görüntüleme formatı (yatay/dikey) ayarlanabilir.
-- **Manuel Güncelleme:** Namaz vakitlerini manuel olarak güncelleyebilirsiniz.
+---
 
-## Kurulum
+## ⚙️ Kurulum
 
 ### Gereksinimler
 
@@ -48,30 +53,26 @@
 
   `python namaz_zaman.py`
 
-## Kullanım
+## 🎮 Kullanım
 
 - **Taşıma:** Widget'a tıklayıp sürükleyerek ekran üzerinde istediğiniz konuma taşıyabilirsiniz.
 - **Sağ Tıklama Menüsü:**
   - **Vakitleri Güncelle:** Namaz vakitlerini manuel olarak günceller.
   - **Opacity Değiştir:** Widget'ın opaklığını %50, %75 veya %100 olarak ayarlayabilirsiniz.
   - **Yön:** Zaman görüntüleme biçimini yatay veya dikey olarak değiştirebilirsiniz.
-  - **Kapat:** Widget'ı kapatır.
+  - ❌ **Kapat:** Widget'ı kapatır.
 - **Kapatma:** `Escape` tuşuna basarak widget'ı kapatabilirsiniz.
 
 ## Lisans
 
-Bu proje [MIT Lisansı](https://opensource.org/licenses/MIT) ile lisanslanmıştır. Daha fazla bilgi için [LICENSE](https://opensource.org/licenses/MIT) dosyasına bakabilirsiniz.
-Projeniz için yaygın olarak kullanılan [MIT Lisansı](https://opensource.org/licenses/MIT) önerilmektedir. MIT Lisansı, projenizin açık kaynak olarak paylaşılmasını sağlar ve kullanıcılara geniş kullanım hakları tanır.
+Bu proje [MIT Lisansı](https://opensource.org/licenses/MIT) ile lisanslanmıştır. Herkesin kullanımına açıktır ve katkıda bulunmanızı bekleriz! 🎉
+Copyright (c) 2024 Ali Tekdemir
 
-Copyright (c) [2024] [Ali Tekdemir]
-
-## İletişim
+## 💬 İletişim
 
 Proje ile ilgili sorularınız veya önerileriniz için e-mail adresimden bana ulaşabilirsiniz.
 
-## Teşekkürler
+## 🌟 Teşekkürler
 
 Diyanet İşleri Başkanlığı: Namaz vakitlerini sağladıkları için teşekkür ederiz.
 Python ve Tkinter: Bu projeyi mümkün kılan güçlü araçlar.
-
----
