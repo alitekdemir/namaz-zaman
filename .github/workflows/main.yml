@@ -4,6 +4,7 @@ name: Build Python App on Release
 on:
   release:
     types: [published]  # Yalnızca yeni bir sürüm yayınlandığında çalışır
+  workflow_dispatch:  # Manuel tetikleme desteği
 
 jobs:
   build-windows:
