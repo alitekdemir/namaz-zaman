@@ -1,11 +1,5 @@
 name: Build and Release Python App
 
-# on: [push] # Her push işlemi yapıldığında çalışır
-# on:
-#   release:
-#     types: [published]  # Yalnızca yeni bir sürüm yayınlandığında çalışır
-#   workflow_dispatch:  # Manuel tetikleme desteği
-
 on:
   workflow_dispatch:  # Manuel tetikleme için
     inputs:
@@ -21,22 +15,22 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2  # Kodu indir
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-          # python-version: 3.x
-          # requirements: 'requirements.txt'
-          # upload_exe_with_name: 'mac-app'
-          # options: --onefile, --windowed, --add-data "il_plaka.json:."
 
       - name: Install Dependencies
-        run: pip install --upgrade pip setuptools wheel pyinstaller # Bağımlılıkları güncelleyin
-        run: pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip setuptools wheel pyinstaller
+          pip install -r requirements.txt
 
       - name: Build Windows App
         run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
-      - run: ls -R dist/
+
+      - name: List Windows Build Directory
+        run: ls -R dist/
 
       - name: Upload Windows Build as Artifact
         uses: actions/upload-artifact@v4
@@ -48,71 +42,120 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v2
-
         with:
-          python-version: 3.11  # Daha stabil bir sürüm
-          # python-version: 3.x
-          # requirements: 'requirements.txt'
+          python-version: 3.11
 
       - name: Install Dependencies
-        run: pip install --upgrade pip setuptools wheel  # Bağımlılıkları güncelleyin
-        run: pip install -r requirements.txt
-        run: pip install py2app --use-pep517  # PEP 517 uyumlu kurulum yapın
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install py2app --use-pep517
 
       - name: Build Mac App
         run: python setup.py py2app
-      - run: ls -R dist/
-      #   run: pip install py2app
-        run: python setup.py py2app
+
+      - name: List Mac Build Directory
+        run: ls -R dist/
+
       - name: Upload Mac Build as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: mac-app
           path: dist/*.app
 
-  release:
+  build-linux:
     runs-on: ubuntu-latest
-    needs: [build-windows, build-mac]  # Build işlemleri tamamlandıktan sonra
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel pyinstaller
+          pip install -r requirements.txt
+
+      - name: Build Linux App
+        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
+
+      - name: List Linux Build Directory
+        run: ls -R dist/
+
+      - name: Upload Linux Build as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-app
+          path: dist/*.exe  # PyInstaller için genellikle .exe değil, ELF ikili dosyaları oluşur. Değiştirin:
+          # path: dist/main  # Örneğin, ana dosya adı 'main' ise
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-mac, build-linux]  # Tüm build işlemleri tamamlandıktan sonra
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
           name: windows-app
-          path: ./  # İndirilecek klasör
+          path: ./windows
+
       - name: Download Mac Artifact
         uses: actions/download-artifact@v4
         with:
           name: mac-app
-          path: ./  # İndirilecek klasör
+          path: ./mac
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-app
+          path: ./linux
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.inputs.tag_name }}  # Parametre olarak alınan tag
-          release_name: ${{ github.event.inputs.release_name }}  # Parametre olarak alınan release adı
+          tag_name: ${{ github.event.inputs.tag_name }}
+          release_name: ${{ github.event.inputs.release_name }}
           body: "Otomatik olarak oluşturulmuş sürüm."
           draft: false
           prerelease: false
+
       - name: Upload Windows Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/windows-app.exe
+          asset_path: ./windows/dist/*.exe  # Windows için
           asset_name: windows-app.exe
           asset_content_type: application/octet-stream
+
       - name: Upload Mac Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/mac-app.app
+          asset_path: ./mac/dist/*.app  # Mac için
           asset_name: mac-app.app
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux/dist/main  # Linux için (PyInstaller çıktı dosya adını kontrol edin)
+          asset_name: linux-app
           asset_content_type: application/octet-stream
