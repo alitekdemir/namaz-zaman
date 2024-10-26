@@ -1,20 +1,20 @@
 name: Build and Release Python App
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger
     inputs:
       tag_name:
-        description: 'Sürüm Tag İsmi (Örneğin: v1.0.0)'
+        description: 'Release Tag Name (e.g., v1.0.0)'
         required: true
       release_name:
-        description: 'Release İsmi (Örneğin: İlk Sürüm)'
+        description: 'Release Name (e.g., First Release)'
         required: true
 
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2  # Check out the code
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Windows App
-        run: pyinstaller --onefile --noconsole --name "NamazZamani-${{ github.event.inputs.tag_name }}-Windows" --add-data "il_plaka.json;." main.py
+        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
 
       - name: List Windows Build Directory
         run: ls -R dist/
@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-app
-          path: dist/NamazZamani-${{ github.event.inputs.tag_name }}-Windows.exe
+          path: dist/*.exe
 
   build-mac:
     runs-on: macos-latest
@@ -52,15 +52,10 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install py2app --use-pep517
 
       - name: Build Mac App
-        run: pyinstaller --onefile --noconsole --name "NamazZamani-${{ github.event.inputs.tag_name }}-MacOS" --add-data "il_plaka.json:." main.py
-
-      - name: Create DMG
-        run: |
-          cd dist
-          zip -r "NamazZamani-${{ github.event.inputs.tag_name }}-MacOS.zip" "NamazZamani-${{ github.event.inputs.tag_name }}-MacOS"
+        run: python setup.py py2app
 
       - name: List Mac Build Directory
         run: ls -R dist/
@@ -69,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mac-app
-          path: dist/NamazZamani-${{ github.event.inputs.tag_name }}-MacOS.zip
+          path: dist/*.app
 
   build-linux:
     runs-on: ubuntu-latest
@@ -87,13 +82,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Linux App
-        run: pyinstaller --onefile --noconsole --name "NamazZamani-${{ github.event.inputs.tag_name }}-Linux" --add-data "il_plaka.json:." main.py
-
-      - name: Create AppImage Package
-        run: |
-          cd dist
-          chmod +x "NamazZamani-${{ github.event.inputs.tag_name }}-Linux"
-          tar -czf "NamazZamani-${{ github.event.inputs.tag_name }}-Linux.tar.gz" "NamazZamani-${{ github.event.inputs.tag_name }}-Linux"
+        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
 
       - name: List Linux Build Directory
         run: ls -R dist/
@@ -102,27 +91,79 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-app
-          path: dist/NamazZamani-${{ github.event.inputs.tag_name }}-Linux.tar.gz
+          path: dist/main  # Ensure the file name matches the output
 
-  create-release:
-    needs: [build-windows, build-mac, build-linux]
+  release:
     runs-on: ubuntu-latest
+    needs: [build-windows, build-mac, build-linux]
     steps:
-      - name: Download All Artifacts
+      - uses: actions/checkout@v2
+
+      - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: windows-app
+          path: ./windows
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Download Mac Artifact
+        uses: actions/download-artifact@v4
         with:
-          tag_name: ${{ github.event.inputs.tag_name }}
-          name: ${{ github.event.inputs.release_name }}
-          draft: false
-          prerelease: false
-          files: |
-            artifacts/windows-app/*
-            artifacts/mac-app/*
-            artifacts/linux-app/*
+          name: mac-app
+          path: ./mac
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-app
+          path: ./linux
+
+      - name: List Windows Directory After Download
+        run: ls -R ./windows
+
+      - name: List Mac Directory After Download
+        run: ls -R ./mac
+
+      - name: List Linux Directory After Download
+        run: ls -R ./linux
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.tag_name }}
+          release_name: ${{ github.event.inputs.release_name }}
+          body: "Automatically generated release."
+          draft: false
+          prerelease: false
+
+      - name: Upload Windows Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./windows/main.exe
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_windows.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Mac Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mac/dist/NamazZamani.app
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_mac.app
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux/main
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_linux
+          asset_content_type: application/octet-stream
