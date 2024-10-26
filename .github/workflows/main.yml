@@ -144,8 +144,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./windows/dist/*.zip  # Windows için
-          asset_name: windows-app.zip
+          asset_path: ./windows/main.exe  # Windows için
+          asset_name: windows-app.exe
           asset_content_type: application/octet-stream
 
       - name: Upload Mac Asset
@@ -154,8 +154,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mac/dist/*.zip  # Mac için
-          asset_name: mac-app.zip
+          asset_path: ./mac/NamazZamanı.app  # Mac için
+          asset_name: mac-app.app
           asset_content_type: application/octet-stream
 
       - name: Upload Linux Asset
@@ -164,6 +164,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./linux/dist/*.zip  # Linux için
-          asset_name: linux-app.zip
+          asset_path: ./linux/main  # Linux için
+          asset_name: linux-app
           asset_content_type: application/octet-stream
