@@ -24,7 +24,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
+          # python-version: 3.x
+          python-version: 3.12
       - run: pip install pyinstaller
       - run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
       - name: Upload Windows Build as Artifact
@@ -40,8 +41,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
-      - run: pip install py2app
+          # python-version: 3.x
+          python-version: 3.11  # Daha stabil bir sürüm
+      - run: pip install --upgrade pip setuptools wheel  # Bağımlılıkları güncelleyin
+      - run: pip install py2app --use-pep517  # PEP 517 uyumlu kurulum yapın
+      # - run: pip install py2app
       - run: python setup.py py2app
       - name: Upload Mac Build as Artifact
         uses: actions/upload-artifact@v3
