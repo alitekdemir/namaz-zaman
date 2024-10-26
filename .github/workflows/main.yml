@@ -59,12 +59,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download Windows Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: windows-app
           path: ./  # İndirilecek klasör
       - name: Download Mac Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mac-app
           path: ./  # İndirilecek klasör
