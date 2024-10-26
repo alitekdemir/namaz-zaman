@@ -1,0 +1,39 @@
+name: Build Python App on Release
+
+# on: [push] # Her push işlemi yapıldığında çalışır
+on:
+  release:
+    types: [published]  # Yalnızca yeni bir sürüm yayınlandığında çalışır
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install pyinstaller
+      - run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
+      - name: Upload Windows Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-app
+          path: dist/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install py2app
+      - run: python setup.py py2app
+      - name: Upload Mac Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: mac-app
+          path: dist/*.app
