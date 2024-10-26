@@ -117,44 +117,15 @@ jobs:
           name: linux-app
           path: ./linux
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release and Upload Assets
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.event.inputs.tag_name }}
-          release_name: ${{ github.event.inputs.release_name }}
+          tag: ${{ github.event.inputs.tag_name }}
+          name: ${{ github.event.inputs.release_name }}
           body: "Otomatik olarak oluşturulmuş sürüm."
           draft: false
           prerelease: false
-
-      - name: Upload Windows Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./windows/dist/*.exe  # Windows için
-          asset_name: windows-app.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload Mac Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mac/dist/*.app  # Mac için
-          asset_name: mac-app.app
-          asset_content_type: application/octet-stream
-
-      - name: Upload Linux Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./linux/dist/main  # Linux için
-          asset_name: linux-app
-          asset_content_type: application/octet-stream
+          files: |
+            ./windows/*.exe
+            ./mac/*.app
+            ./linux/main
