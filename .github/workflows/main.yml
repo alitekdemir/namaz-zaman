@@ -1,7 +1,7 @@
 name: Build and Release Python App
 
 on:
-  workflow_dispatch:  # Manuel tetikleme için
+  workflow_dispatch:
     inputs:
       tag_name:
         description: 'Sürüm Tag İsmi (Örneğin: v1.0.0)'
@@ -27,7 +27,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Windows App
-        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
+        run: pyinstaller --onefile --noconsole --name "NamazZamani-${{ github.event.inputs.tag_name }}-Windows" --add-data "il_plaka.json;." main.py
 
       - name: List Windows Build Directory
         run: ls -R dist/
@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-app
-          path: dist/*.exe
+          path: dist/NamazZamani-${{ github.event.inputs.tag_name }}-Windows.exe
 
   build-mac:
     runs-on: macos-latest
@@ -52,10 +52,15 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
-          pip install py2app --use-pep517
+          pip install pyinstaller
 
       - name: Build Mac App
-        run: python setup.py py2app
+        run: pyinstaller --onefile --noconsole --name "NamazZamani-${{ github.event.inputs.tag_name }}-MacOS" --add-data "il_plaka.json:." main.py
+
+      - name: Create DMG
+        run: |
+          cd dist
+          zip -r "NamazZamani-${{ github.event.inputs.tag_name }}-MacOS.zip" "NamazZamani-${{ github.event.inputs.tag_name }}-MacOS"
 
       - name: List Mac Build Directory
         run: ls -R dist/
@@ -64,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mac-app
-          path: dist/*.app
+          path: dist/NamazZamani-${{ github.event.inputs.tag_name }}-MacOS.zip
 
   build-linux:
     runs-on: ubuntu-latest
@@ -82,7 +87,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Linux App
-        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
+        run: pyinstaller --onefile --noconsole --name "NamazZamani-${{ github.event.inputs.tag_name }}-Linux" --add-data "il_plaka.json:." main.py
+
+      - name: Create AppImage Package
+        run: |
+          cd dist
+          chmod +x "NamazZamani-${{ github.event.inputs.tag_name }}-Linux"
+          tar -czf "NamazZamani-${{ github.event.inputs.tag_name }}-Linux.tar.gz" "NamazZamani-${{ github.event.inputs.tag_name }}-Linux"
 
       - name: List Linux Build Directory
         run: ls -R dist/
@@ -91,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-app
-          path: dist/main
+          path: dist/NamazZamani-${{ github.event.inputs.tag_name }}-Linux.tar.gz
 
   create-release:
     needs: [build-windows, build-mac, build-linux]
