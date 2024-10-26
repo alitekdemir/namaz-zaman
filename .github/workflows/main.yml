@@ -14,12 +14,12 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: 3.11
           architecture: 'x64'
 
       - name: Install Dependencies
@@ -30,62 +30,55 @@ jobs:
       - name: Build Windows App
         run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
 
-      - name: List Windows Build Directory
-        run: dir dist\
-
-      - name: Zip Windows Build
+      - name: Create ZIP for Windows
         run: |
           cd dist
-          powershell Compress-Archive -Path *.exe -DestinationPath NamazZamani_windows.zip
+          powershell Compress-Archive main.exe NamazZamani_Windows.zip
 
       - name: Upload Windows Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-app
-          path: dist\NamazZamani_windows.zip
+          path: dist/NamazZamani_Windows.zip
 
   build-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: 3.11
 
       - name: Install Dependencies
         run: |
-          pip install --upgrade pip setuptools wheel
+          pip install --upgrade pip setuptools wheel pyinstaller
           pip install -r requirements.txt
-          pip install py2app --use-pep517
 
       - name: Build Mac App
-        run: python setup.py py2app
+        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
 
-      - name: List Mac Build Directory
-        run: ls -R dist/
-
-      - name: Zip Mac Build
+      - name: Create ZIP for Mac
         run: |
           cd dist
-          zip NamazZamani_mac.zip main
+          zip -r NamazZamani_Mac.zip main
 
       - name: Upload Mac Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mac-app
-          path: dist/NamazZamani_mac.zip
+          path: dist/NamazZamani_Mac.zip
 
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: 3.11
 
       - name: Install Dependencies
         run: |
@@ -95,52 +88,27 @@ jobs:
       - name: Build Linux App
         run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
 
-      - name: List Linux Build Directory
-        run: ls -R dist/
-
-      - name: Zip Linux Build
+      - name: Create ZIP for Linux
         run: |
           cd dist
-          zip NamazZamani_linux.zip main
+          zip -r NamazZamani_Linux.zip main
 
       - name: Upload Linux Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-app
-          path: dist/NamazZamani_linux.zip
+          path: dist/NamazZamani_Linux.zip
 
   release:
     runs-on: ubuntu-latest
     needs: [build-windows, build-mac, build-linux]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v3
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: windows-app
-          path: ./windows
-
-      - name: Download Linux Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: linux-app
-          path: ./linux
-
-      - name: Download Mac Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: mac-app
-          path: ./mac
-
-      - name: List Directories After Download
-        run: |
-          echo "Windows Build:"
-          ls -R ./windows
-          echo "Mac Build:"
-          ls -R ./mac
-          echo "Linux Build:"
-          ls -R ./linux
+          path: ./artifacts
 
       - name: Create GitHub Release
         id: create_release
@@ -150,36 +118,36 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.tag_name }}
           release_name: ${{ github.event.inputs.release_name }}
-          body: "Automatically generated release."
+          body: "Automatically generated release for version ${{ github.event.inputs.tag_name }}"
           draft: false
           prerelease: false
 
-      - name: Upload Windows Asset
+      - name: Upload Windows Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./windows/dist/NamazZamani_windows.zip
-          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_windows.zip
+          asset_path: ./artifacts/windows-app/NamazZamani_Windows.zip
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_Windows.zip
           asset_content_type: application/zip
 
-      - name: Upload Linux Asset
+      - name: Upload Mac Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./linux/dist/NamazZamani_linux.zip
-          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_linux.zip
+          asset_path: ./artifacts/mac-app/NamazZamani_Mac.zip
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_Mac.zip
           asset_content_type: application/zip
 
-      - name: Upload Mac Asset
+      - name: Upload Linux Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mac/dist/NamazZamani_mac.zip
-          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_mac.zip
+          asset_path: ./artifacts/linux-app/NamazZamani_Linux.zip
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_Linux.zip
           asset_content_type: application/zip
