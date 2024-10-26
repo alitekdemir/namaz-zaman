@@ -6,7 +6,7 @@ OPTIONS = {
     'argv_emulation': True,
     'packages': [],
     'plist': {
-        'CFBundleName': 'NamazZamanı',
+        'CFBundleName': 'NamazZamani',
         'CFBundleVersion': '1.0',
         'CFBundleIdentifier': 'com.example.myapp',
         'LSUIElement': True,  # Terminal penceresini gizler
