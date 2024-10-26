@@ -1,34 +1,39 @@
 name: Build and Release Python App
 
-# on: [push] # Her push işlemi yapıldığında çalışır
-# on:
-#   release:
-#     types: [published]  # Yalnızca yeni bir sürüm yayınlandığında çalışır
-#   workflow_dispatch:  # Manuel tetikleme desteği
-
 on:
-  workflow_dispatch:  # Manuel tetikleme için
+  workflow_dispatch:  # Manual trigger
     inputs:
       tag_name:
-        description: 'Sürüm Tag İsmi (Örneğin: v1.0.0)'
+        description: 'Release Tag Name (e.g., v1.0.0)'
         required: true
       release_name:
-        description: 'Release İsmi (Örneğin: İlk Sürüm)'
+        description: 'Release Name (e.g., First Release)'
         required: true
 
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2  # Check out the code
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
-      - run: pip install pyinstaller
-      - run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
+          python-version: 3.11
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel pyinstaller
+          pip install -r requirements.txt
+
+      - name: Build Windows App
+        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json;." main.py
+
+      - name: List Windows Build Directory
+        run: ls -R dist/
+
       - name: Upload Windows Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-app
           path: dist/*.exe
@@ -37,59 +42,128 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
-      - run: pip install py2app
-      - run: python setup.py py2app
+          python-version: 3.11
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install py2app --use-pep517
+
+      - name: Build Mac App
+        run: python setup.py py2app
+
+      - name: List Mac Build Directory
+        run: ls -R dist/
+
       - name: Upload Mac Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mac-app
           path: dist/*.app
 
-  release:
+  build-linux:
     runs-on: ubuntu-latest
-    needs: [build-windows, build-mac]  # Build işlemleri tamamlandıktan sonra
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel pyinstaller
+          pip install -r requirements.txt
+
+      - name: Build Linux App
+        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
+
+      - name: List Linux Build Directory
+        run: ls -R dist/
+
+      - name: Upload Linux Build as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-app
+          path: dist/main  # Ensure the file name matches the output
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-mac, build-linux]
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Download Windows Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: windows-app
-          path: ./  # İndirilecek klasör
+          path: ./windows
+
       - name: Download Mac Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: mac-app
-          path: ./  # İndirilecek klasör
+          path: ./mac
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-app
+          path: ./linux
+
+      - name: List Windows Directory After Download
+        run: ls -R ./windows
+
+      - name: List Mac Directory After Download
+        run: ls -R ./mac
+
+      - name: List Linux Directory After Download
+        run: ls -R ./linux
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.inputs.tag_name }}  # Parametre olarak alınan tag
-          release_name: ${{ github.event.inputs.release_name }}  # Parametre olarak alınan release adı
-          body: "Otomatik olarak oluşturulmuş sürüm."
+          tag_name: ${{ github.event.inputs.tag_name }}
+          release_name: ${{ github.event.inputs.release_name }}
+          body: "Automatically generated release."
           draft: false
           prerelease: false
+
       - name: Upload Windows Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/windows-app.exe
-          asset_name: windows-app.exe
+          asset_path: ./windows/main.exe
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_windows.exe
           asset_content_type: application/octet-stream
+
       - name: Upload Mac Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/mac-app.app
-          asset_name: mac-app.app
+          asset_path: ./mac/NamazZamani.app
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_mac.app
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux/main
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_linux
           asset_content_type: application/octet-stream
