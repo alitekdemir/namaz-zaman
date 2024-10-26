@@ -56,11 +56,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install --upgrade pip setuptools wheel pyinstaller
+          pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
+          pip install py2app --use-pep517
 
       - name: Build Mac App
-        run: pyinstaller --onefile --noconsole --add-data "il_plaka.json:." main.py
+        run: python setup.py py2app
 
       - name: List Mac Build Directory
         run: ls -R dist/
@@ -120,17 +121,17 @@ jobs:
           name: windows-app
           path: ./windows
 
-      - name: Download Mac Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: mac-app
-          path: ./mac
-
       - name: Download Linux Artifact
         uses: actions/download-artifact@v3
         with:
           name: linux-app
           path: ./linux
+
+      - name: Download Mac Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: mac-app
+          path: ./mac
 
       - name: List Directories After Download
         run: |
@@ -163,16 +164,6 @@ jobs:
           asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_windows.zip
           asset_content_type: application/zip
 
-      - name: Upload Mac Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mac/dist/NamazZamani_mac.zip
-          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_mac.zip
-          asset_content_type: application/zip
-
       - name: Upload Linux Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -181,4 +172,14 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./linux/dist/NamazZamani_linux.zip
           asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_linux.zip
+          asset_content_type: application/zip
+
+      - name: Upload Mac Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./mac/dist/NamazZamani_mac.zip
+          asset_name: NamazZamani_${{ github.event.inputs.tag_name }}_mac.zip
           asset_content_type: application/zip
