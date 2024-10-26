@@ -99,15 +99,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: List Windows Directory After Download
-        run: ls -R ./windows
-        
-      - name: List Mac Directory After Download
-        run: ls -R ./mac
-        
-      - name: List Linux Directory After Download
-        run: ls -R ./linux
-
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
@@ -125,6 +116,15 @@ jobs:
         with:
           name: linux-app
           path: ./linux
+
+      - name: List Windows Directory After Download
+        run: ls -R ./windows
+        
+      - name: List Mac Directory After Download
+        run: ls -R ./mac
+        
+      - name: List Linux Directory After Download
+        run: ls -R ./linux
 
       - name: Create GitHub Release
         id: create_release
@@ -144,7 +144,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./windows/dist/*.zip  # Windows için
+          asset_path: ./windows/dist/*.exe  # Windows için
           asset_name: windows-app.zip
           asset_content_type: application/octet-stream
 
@@ -154,7 +154,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./mac/dist/*.zip  # Mac için
+          asset_path: ./mac/dist/*.app  # Mac için
           asset_name: mac-app.zip
           asset_content_type: application/octet-stream
 
@@ -164,6 +164,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./linux/dist/*.zip  # Linux için
+          asset_path: ./linux/dist/main  # Linux için
           asset_name: linux-app.zip
           asset_content_type: application/octet-stream
