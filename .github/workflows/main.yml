@@ -14,10 +14,10 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2  # Kodu indir
+      - uses: actions/checkout@v3  # Güncel sürüm
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4  # Güncel sürüm
         with:
           python-version: 3.11
 
@@ -41,10 +41,10 @@ jobs:
   build-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3  # Güncel sürüm
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4  # Güncel sürüm
         with:
           python-version: 3.11
 
@@ -69,10 +69,10 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3  # Güncel sürüm
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4  # Güncel sürüm
         with:
           python-version: 3.11
 
@@ -91,13 +91,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-app
-          path: dist/main  # PyInstaller'ın oluşturduğu dosya adını kesinlikle kontrol edin
+          path: dist/main  # PyInstaller'ın oluşturduğu dosya adı
 
   release:
     runs-on: ubuntu-latest
     needs: [build-windows, build-mac, build-linux]  # Tüm build işlemleri tamamlandıktan sonra
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3  # Güncel sürüm
 
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
