@@ -1,7 +1,7 @@
 from setuptools import setup
 
 APP = ['main.py']
-DATA_FILES = ['il_plaka.json']  # JSON dosyasını ekliyoruz
+# DATA_FILES = ['il_plaka.json']  # JSON dosyasını ekliyoruz
 OPTIONS = {
     'argv_emulation': True,
     'packages': [],
