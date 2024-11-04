@@ -40,7 +40,7 @@ class ClockWidget:
         self.setup_bindings()
         self.create_context_menu()
 
-        if not Tools.PRAYER_TIMES.exists():
+        if not Tools.PRAYER_TIMES.exists() or not self._prayer_times:
             logger.info("Vakitler dosyası bulunamadı. Ayarlar penceresi açılıyor...")
             self.root.after(1000, lambda: self.open_settings(None))
 

@@ -154,6 +154,8 @@ class SettingsWindow:
             Tools.update_prayer_times(times)
             self._show_status("Vakitler güncellendi", "success")
             if hasattr(self.root, 'clock_widget'):
+                self.root.clock_widget._prayer_times = Tools.get_prayer_times()
+                self.root.clock_widget._next_prayer_time = Tools.find_next_prayer_time(self.root.clock_widget._prayer_times)
                 self.root.clock_widget.update_clock()
         else:
             self._show_status("Güncelleme başarısız", "error")
