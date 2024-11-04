@@ -19,3 +19,5 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"Program başlatılırken hata oluştu: {e}")
         raise
+
+# pyinstaller --onefile --noconsole main.py
