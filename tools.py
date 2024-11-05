@@ -98,7 +98,6 @@ class Tools:
         {"plaka": "81", "il": "Düzce", "id": "526"}
     ]
 
-
     _default_settings = {
         "LOCATION": {"city": {"name": "İstanbul", "id": "539"}, "district": {"name": "İSTANBUL", "id": "9541"}},
         "COLORS": {"standard": {"background": "#0a1932", "text": "#ffffff"},
@@ -135,7 +134,22 @@ class Tools:
         return cls._prayer_times
 
     @classmethod
-    def load_json(cls, file_path):
+    def update_prayer_times(cls, new_times):
+        cls.save_json(cls.PRAYER_TIMES, new_times)
+        cls._prayer_times = new_times
+
+    @classmethod
+    def update_settings(cls, new_settings):
+        cls.save_json(cls.SETTINGS, new_settings)
+        cls._settings = new_settings
+
+    @classmethod
+    def create_default_settings(cls):
+        cls.save_json(cls.SETTINGS, cls._default_settings)
+        return cls._default_settings
+
+    @staticmethod
+    def load_json(file_path):
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
@@ -153,15 +167,17 @@ class Tools:
             json.dump(data, file, ensure_ascii=False, separators=(',', ':'))
             logger.info(f"{file_path} dosyası kaydedildi.")
 
-    @classmethod
-    def update_prayer_times(cls, new_times):
-        cls.save_json(cls.PRAYER_TIMES, new_times)
-        cls._prayer_times = new_times
 
-    @classmethod
-    def update_settings(cls, new_settings):
-        cls.save_json(cls.SETTINGS, new_settings)
-        cls._settings = new_settings
+
+    @staticmethod
+    def find_next_prayer_time2(prayer_times):
+        now = datetime.now()
+        for day, times in prayer_times.items(): # {"2021-08-01": ["05:00", "13:00", ...]}
+            for time_str in times: # "05:00"
+                prayer_dt = datetime.strptime(f"{day} {time_str}", "%Y-%m-%d %H:%M")
+                if prayer_dt > now: # Eğer bulunan vakit şu andan ileriyse
+                    return prayer_dt
+        return None  # Eğer uygun vakit bulunamazsa None döner
 
     @staticmethod
     def find_next_prayer_time(prayer_times):
@@ -187,11 +203,6 @@ class Tools:
         # return f"{hours}:{minutes:02}:{seconds:02}".split(":")
         return hours, minutes, seconds
 
-    @classmethod
-    def create_default_settings(cls):
-        cls.save_json(cls.SETTINGS, cls._default_settings)
-        return cls._default_settings
-
     @staticmethod
     def _fill_missing_settings(defaults, current):
         """Yalnızca eksik ayarları varsayılanlarla doldurur, mevcut ayarları değiştirmez."""
@@ -203,16 +214,6 @@ class Tools:
             else:
                 # Eğer mevcut bir ayar yoksa varsayılanı ekler
                 current.setdefault(key, value)
-
-
-    def validate_and_fix_settings(self):
-        logger.info("Ayarlar kontrol ediliyor...")
-        current_settings = self.get_settings() or {}
-        self._fill_missing_settings(self._default_settings, current_settings)
-        self.update_settings(current_settings)
-        return current_settings
-
-
 
     def validate_and_fix_settings(self):
         logger.info("Ayarlar kontrol ediliyor...")

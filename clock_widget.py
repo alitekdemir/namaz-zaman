@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from datetime import datetime
 import logging as logger
@@ -8,7 +7,7 @@ from tools import Tools
 class ClockWidget:
     def __init__(self, root):
         self.root = root
-        self._settings = Tools().validate_and_fix_settings()
+        self._settings = Tools.get_settings()  # Ayarları doğrudan Tools'dan al
         self._prayer_times = Tools.get_prayer_times() # {date: [time1, time2, ...]}
         self._next_prayer_time = Tools.find_next_prayer_time(self._prayer_times) # datetime object "%Y-%m-%d %H:%M"
 
@@ -177,7 +176,6 @@ class ClockWidget:
         self.window.after(5000, self.keep_on_top)
 
 
-
     def update_clock(self):
         if self._next_prayer_time:
             self.update_remaining_time_display()
@@ -193,15 +191,14 @@ class ClockWidget:
 
     # Kalan süreyi güncelle ve göster
     def update_remaining_time_display(self):
-        hours, minutes, seconds = Tools.remaining_time(self._next_prayer_time)
-        remaining_minutes = hours*60 + minutes
-
-        if remaining_minutes == 0 and seconds == 0:
+        now = datetime.now()
+        if now >= self._next_prayer_time: # Eğer vakit geçtiyse
+            # Bir sonraki vakti bul ve güncelle
             self._next_prayer_time = Tools.find_next_prayer_time(self._prayer_times)
-            
-        self.update_color_by_time(remaining_minutes)
-        self.label.config(text=self.format_time(hours, minutes, seconds))
 
+        hours, minutes, seconds = Tools.remaining_time(self._next_prayer_time)
+        self.update_color_by_time(hours * 60 + minutes) # Renk güncelle
+        self.label.config(text=self.format_time(hours, minutes, seconds))
 
     def format_time(self, hours, minutes, seconds) -> str:
         """Saat metnini ayarlardaki formatlara göre döndür"""
