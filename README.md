@@ -76,3 +76,7 @@ Proje ile ilgili sorularınız veya önerileriniz için e-mail adresimden bana u
 
 Diyanet İşleri Başkanlığı: Namaz vakitlerini sağladıkları için teşekkür ederiz.
 Python ve Tkinter: Bu projeyi mümkün kılan güçlü araçlar.
+
+---
+
+**Katkı ve Destek:** Projeye kod, hata bildirimi veya [GitHub Sponsors](https://github.com/sponsors/alitekdemir) üzerinden katkıda bulunabilirsiniz.
